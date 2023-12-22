@@ -26,18 +26,26 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     const TaskCollection = client.db("New-Task").collection('Task');
 
+    
     app.post('/task', async(req, res) =>{
-        const user = req.body;
-        const result = await TaskCollection.insertOne(user);
+      const user = req.body;
+      const result = await TaskCollection.insertOne(user);
+      res.send(result);
+    })
+
+    app.get('/task/:id/:username', async(req, res) =>{
+        const username = req.params.username;
+        const filter = {username : username , _id: new ObjectId(req.params.id)}
+        const result = await TaskCollection.findOne(filter);
         res.send(result);
     })
 
-    app.get('/task/:username', async(req, res) =>{
-        const username = req.params.username;
-        const filter = {username : username}
-        const result = await TaskCollection.find(filter).toArray();
-        res.send(result);
-    })
+     app.get('/task/:username', async(req, res) =>{
+         const username = req.params.username;
+         const filter = {username : username}
+         const result = await TaskCollection.find(filter).toArray();
+         res.send(result);
+     })
 
     app.delete('/task/:id', async(req, res) =>{
         const id = req.params.id;
@@ -46,6 +54,35 @@ async function run() {
         res.send(result)
       })
 
+    // app.get('/task/:id', async(req, res) =>{
+    //   const id = req.params.id;
+    //   const filter = {_id : new ObjectId (id)}
+    //   const result = await TaskCollection.findOne(filter)
+    //   res.send(result);
+    // })
+
+    app.patch('/task/:id', async (req, res) => {
+      try {
+        const body = req.body;
+        const result = await TaskCollection.updateOne(
+          { _id: new ObjectId(req.params.id) },
+          { $set: {
+            taskName: body.taskName,
+            time: body.time,
+            deadlines: body.deadlines,
+            priority: body.priority,
+            location: body.location,
+            description: body.description
+          }}
+        );
+    
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+        res.status(500).send('Internal Server Error');
+      }
+    });
+    
     // Send a ping to confirm a successful connection
     
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
