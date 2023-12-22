@@ -41,10 +41,10 @@ async function run() {
     })
 
      app.get('/task/:username', async(req, res) =>{
-         const username = req.params.username;
-         const filter = {username : username}
-         const result = await TaskCollection.find(filter).toArray();
-         res.send(result);
+        const username = req.params.username;
+        const filter = {username : username}
+        const result = await TaskCollection.find(filter).toArray();
+        res.send(result);
      })
 
     app.delete('/task/:id', async(req, res) =>{
@@ -54,12 +54,7 @@ async function run() {
         res.send(result)
       })
 
-    // app.get('/task/:id', async(req, res) =>{
-    //   const id = req.params.id;
-    //   const filter = {_id : new ObjectId (id)}
-    //   const result = await TaskCollection.findOne(filter)
-    //   res.send(result);
-    // })
+    
 
     app.patch('/task/:id', async (req, res) => {
       try {
@@ -82,7 +77,28 @@ async function run() {
         res.status(500).send('Internal Server Error');
       }
     });
+
+
+    app.patch('/changeStatus/:id', async (req, res) => {
+      try {
+        
+        const updatedTask = await TaskCollection.updateOne(
+          {_id: new ObjectId(req.params.id)},
+          { $set: { status: req.body.status } }, 
+          { upsert: true } 
+        );
+        res.json(updatedTask);
+      } catch (error) {
+        console.error('Error updating task status:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    });
+
+
+    app.get('/')
     
+
+
     // Send a ping to confirm a successful connection
     
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
